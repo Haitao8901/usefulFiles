@@ -1,0 +1,38 @@
+		    checkOneLine:function(line, searchVal, lineNum, myOptions){
+		    	var innerHtml = line.innerHTML;
+		    	
+		    	//regs
+		    	var htmltagReg = new RegExp("<\/?[^>]*>", "ig");
+		    	var searchReg = new RegExp("(" + searchVal + ")", "ig");
+		    	
+		    	var tags = [];
+		    	var lineOrder = 0;
+		    	var tagOrder = 0;
+		    	
+		    	innerHtml = innerHtml.replace(htmltagReg, function(tag){
+		    		//first replace html tag with \n\t\n to avoid the attribute value affecting the search
+		    		tags.push(tag);
+		    		return "\n\t\n";
+		    	}).replace(searchReg, function(foundText){
+		    		//second record the matched info and hightligh it
+		    		if("" == foundText.trim()){
+		    			return "";
+		    		}
+		    		var foundLine = {};
+		    		myOptions.totalFoundCnt++;
+		    		foundLine.searchVal = searchVal;
+		    		foundLine.line = line;
+		    		foundLine.lineNum = lineNum;
+		    		foundLine.order = myOptions.totalFoundCnt-1;
+		    		//one line may contains several matches text, lineOrder is the order they appear
+		    		foundLine.lineOrder = lineOrder++;
+		    		foundLine.originalHtml = $(line).html();
+		    		myOptions.foundLines.push(foundLine);
+		    		return "<span class=\"matchtext\" style=\"background-color: yellow;\">" + foundText + "</span>";
+		    	}).replace(/\n\t\n/ig, function(foundText){
+		    		//finally restore the html tag
+		    		return tags[tagOrder++];
+		    	});
+		    	
+		    	$(line).html(innerHtml);
+		    }
